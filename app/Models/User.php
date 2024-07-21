@@ -20,6 +20,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'type'
     ];
 
     /**
@@ -44,4 +45,26 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function is_admin(): bool
+    {
+        return $this->type === 'admin';
+    }
+
+
+    public function subscriptions()
+    {
+        return $this->belongsToMany(Subscription::class, 'user_id');
+    }
+
+    public function getCurrentSubscription()
+    {
+        return $this->subscriptions()->where('ends_at', '>', now())->first();
+    }
+
+    public function hasActiveSubscription()
+    {
+        return $this->getCurrentSubscription() !== null;
+    }
+
 }
