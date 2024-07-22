@@ -15,4 +15,9 @@ class Video extends Model
     {
         return $this->hasMany(Comment::class);
     }
+
+    public function isPremium()
+    {
+        return $this->subscription_level == 1;
+    }
 }

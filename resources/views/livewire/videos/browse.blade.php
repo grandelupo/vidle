@@ -6,7 +6,7 @@
             <div x-data="{ open: false }">
                 <div class="flex justify-between">
                     <h2 class="text-2xl font-semibold text-gray-800 leading-tight">Wszystkie filmy</h2>
-                    @if (auth()->user()->is_admin() && !$mini)
+                    @if (auth()->check() && auth()->user()->isAdmin() && !$mini)
                         <div>
                             <a href="{{ route('videos.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Dodaj nowy</a>
                             <a href="{{ route('chapters.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Dodaj nowy rozdział</a>

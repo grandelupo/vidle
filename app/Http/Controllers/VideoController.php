@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Chapter;
+use App\Models\User;
 use App\Models\Video;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -14,10 +15,17 @@ class VideoController extends Controller
     public $url;
     public $subscription_level;
 
-    public function index()
+    public function index(Request $request)
     {
         $chapters = Chapter::all();
-        return view('videos.index', compact('chapters'));
+        $success = $request->get('success');
+        $error = $request->get('error');
+
+        if (session('success')) {
+            $success = session('success');
+        }
+
+        return view('videos.index', compact('chapters', 'success', 'error'));
     }
 
     public function create()
@@ -47,7 +55,18 @@ class VideoController extends Controller
 
         $chapters = Chapter::all();
 
-        return view('videos.show', compact('video', 'chapters'));
+        $user = User::find(auth()->id());
+        if ($user) {
+            $canIWatch = false;
+            $canIWatch = $video->subscription_level === '0'
+                        || $user->subscribed() && $video->subscription_level === '1'
+                        || $user->isAdmin();
+        }
+        else {
+            $canIWatch = $video->subscription_level === '0';
+        }
+        
+        return view('videos.show', compact('video', 'chapters', 'canIWatch'));
     }
 
     public function edit(Video $video)

@@ -6,10 +6,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Cashier\Billable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, Billable;
 
     /**
      * The attributes that are mass assignable.
@@ -46,25 +47,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function is_admin(): bool
+    public function isAdmin(): bool
     {
         return $this->type === 'admin';
-    }
-
-
-    public function subscriptions()
-    {
-        return $this->belongsToMany(Subscription::class, 'user_id');
-    }
-
-    public function getCurrentSubscription()
-    {
-        return $this->subscriptions()->where('ends_at', '>', now())->first();
-    }
-
-    public function hasActiveSubscription()
-    {
-        return $this->getCurrentSubscription() !== null;
     }
 
 }
