@@ -67,7 +67,7 @@
 
                                     <div>
                                         <label for="content" class="block font-medium text-gray-700">Treść</label>
-                                        <textarea name="content" id="content" class="form-input mt-1 block w-full" required></textarea>
+                                        <x-textarea name="content" id="content" class="form-input mt-1 block w-full" required></x-textarea>
                                         @error('content') <span class="red mt-1">{{$message}}</span> @enderror
                                     </div>
 

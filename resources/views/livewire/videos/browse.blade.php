@@ -8,7 +8,7 @@
                     <h2 class="text-2xl font-semibold text-gray-800 leading-tight">Wszystkie filmy</h2>
                     @if (auth()->check() && auth()->user()->isAdmin() && !$mini)
                         <div>
-                            <a href="{{ route('videos.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Dodaj nowy</a>
+                            <a href="{{ route('videos.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Dodaj nowy film</a>
                             <a href="{{ route('chapters.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Dodaj nowy rozdział</a>
                         </div>
                     @endif
@@ -39,6 +39,20 @@
                                                         @if (!$mini)
                                                             <td class="px-6 py-4 whitespace-no-wrap">
                                                                 <div class="text-sm leading-5 text-gray-500">{{ $video->description }}</div>
+                                                            </td>
+                                                        @endif
+                                                        @if (auth()->check() && auth()->user()->isAdmin())
+                                                            <td class="show-on-hover px-6 py-4 whitespace-no-wrap text-right text-sm leading-5 font-medium">
+                                                                <div class="inline-block">
+                                                                    <form action="{{ route('videos.destroy', $video) }}" method="POST">
+                                                                        @csrf
+                                                                        @method('DELETE')
+                                                                        <button type="submit" class="text-red-600 hover:text-red-900">Usuń</button>
+                                                                    </form>
+                                                                </div>
+                                                                <div class="inline-block ml-4">
+                                                                    <a href="{{ route('videos.edit', $video) }}" class="text-indigo-600 hover:text-indigo-900">Edytuj</a>
+                                                                </div>
                                                             </td>
                                                         @endif
                                                     </tr>

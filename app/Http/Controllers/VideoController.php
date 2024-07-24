@@ -30,7 +30,10 @@ class VideoController extends Controller
 
     public function create()
     {
-        return view('videos.create', ['chapters' => Chapter::all()]);
+        return view('videos.edit', [
+            'chapters' => Chapter::all(),
+            'edit' => false
+        ]);
     }
 
     public function store(Request $request)
@@ -70,15 +73,24 @@ class VideoController extends Controller
 
     public function edit(Video $video)
     {
-        return view('videos.edit', compact('video'));
+        $chapters = Chapter::all();
+        $edit = true;
+
+        return view('videos.edit', compact('video', 'chapters', 'edit'));
     }
 
     public function update(Request $request, Video $video)
     {
+        $user = User::find(auth()->id());
+        if (!$user->isAdmin()) {
+            return redirect()->route('videos.index')
+                ->with('error', 'You are not allowed to update videos');
+        }
+
         $request->validate([
             'title' => 'required',
             'url' => 'required',
-            'description' => 'required',
+            'description' => '',
             'subscription_level' => 'required',
         ]);
 
@@ -90,6 +102,12 @@ class VideoController extends Controller
 
     public function destroy(Video $video)
     {
+        $user = User::find(auth()->id());
+        if (!$user->isAdmin()) {
+            return redirect()->route('videos.index')
+                ->with('error', 'You are not allowed to delete videos');
+        }
+
         $video->delete();
 
         return redirect()->route('videos.index')
