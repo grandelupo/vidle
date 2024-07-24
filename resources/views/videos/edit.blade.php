@@ -46,8 +46,8 @@
                     <label for="subscription_level" class="block font-medium text-gray-700">Subscription Level</label>
                     <x-select name="subscription_level" id="subscription_level" class="form-select mt-1 block w-full" required>
                         <option value="0" @if ($edit) {{ $video->subscription_level == 0 ? ' selected' : '' }} @endif>Darmowy film</option>
-                        <option value="1" @if ($edit) {{ $video->subscription_level == 0 ? ' selected' : '' }} @endif>Płatny (dla subskrybentów)</option>
-                        <option value="2" @if ($edit) {{ $video->subscription_level == 0 ? ' selected' : '' }} @endif>Prywatny (tylko Ty widzisz film)</option>
+                        <option value="1" @if ($edit) {{ $video->subscription_level == 1 ? ' selected' : '' }} @endif>Płatny (dla subskrybentów)</option>
+                        <option value="2" @if ($edit) {{ $video->subscription_level == 2 ? ' selected' : '' }} @endif>Prywatny (tylko Ty widzisz film)</option>
                     </x-select>
                     @error('subscription_level') <span class="red mt-1">{{$message}}</span> @enderror
                 </div>

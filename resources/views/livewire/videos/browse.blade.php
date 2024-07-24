@@ -33,7 +33,15 @@
                                                     <tr>
                                                         <td class="pl-16 pr-6 py-4 whitespace-no-wrap">
                                                             <a href="{{ route('videos.show', $video) }}" class="text-indigo-600 hover:text-indigo-900 hover:underline">
-                                                                <div class="text-sm leading-5 font-medium">{{ $video->title }}</div>
+                                                                <div class="text-sm leading-5 font-medium">
+                                                                    {{ $video->title }}
+                                                                    @if ($video->subscription_level == 2 && auth()->check() && auth()->user()->isAdmin())
+                                                                        <span class="text-gray-500"> (Prywatny)</span>
+                                                                    @endif
+                                                                    @if ($video->subscription_level == 1 && auth()->check() && auth()->user()->isAdmin())
+                                                                        <span class="text-yellow-500"> (Premium)</span>
+                                                                    @endif
+                                                                </div>
                                                             </a>
                                                         </td>
                                                         @if (!$mini)
