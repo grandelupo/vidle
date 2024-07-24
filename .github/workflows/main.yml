@@ -1,0 +1,62 @@
+name: Build and deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ⛏️
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@main
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build dependencies
+      run: npm run build
+
+    - name: Configure PHP 8.0
+      uses: shivammathur/setup-php@master
+      with:
+        php-version: 8.2
+        extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml
+
+    - name: Composer install
+      run: |
+        composer install --no-dev --no-interaction --prefer-dist
+
+    - name: Create deployment artifact
+      env:
+        GITHUB_SHA: ${{ github.sha }}
+      run: tar -czf "${GITHUB_SHA}".tar.gz --exclude=*.git --exclude=node_modules *
+
+    - name: Store artifact for distribution
+      uses: actions/upload-artifact@main
+      with:
+        name: app-build
+        path: ${{ github.sha }}.tar.gz
+
+  deploy:
+    name: Deploy 🚀
+    needs: build
+    runs-on: ubuntu-latest
+    environment: main
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@main
+    - name: Download artifact
+      uses: actions/download-artifact@main
+      with:
+        name: app-build
+    - name: Sync artifact to hosting
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 222
+        source: ${{ github.sha }}.tar.gz
+        target: '/artifacts'
