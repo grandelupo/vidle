@@ -57,13 +57,12 @@ class VideoController extends Controller
 
         $user = User::find(auth()->id());
         if ($user) {
-            $canIWatch = false;
-            $canIWatch = $video->subscription_level === '0'
-                        || $user->subscribed() && $video->subscription_level === '1'
+            $canIWatch = $video->subscription_level == '0'
+                        || $user->subscribed() && $video->subscription_level == '1'
                         || $user->isAdmin();
         }
         else {
-            $canIWatch = $video->subscription_level === '0';
+            $canIWatch = $video->subscription_level == '0';
         }
         
         return view('videos.show', compact('video', 'chapters', 'canIWatch'));
