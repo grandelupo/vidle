@@ -6,7 +6,9 @@ use App\Http\Controllers\VideoController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome');
+Route::get('/', function () {
+    return redirect()->route('videos.index');
+});
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
