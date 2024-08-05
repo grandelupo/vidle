@@ -1,8 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ $video->title }} @if($video->isPremium()) <span class="text-sm text-white px-2 py-1 bg-yellow-400 rounded">Premium</span> @endif
-        </h2>
+        <div class="flex justify-between">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ $video->title }} @if($video->isPremium()) <span class="text-sm text-white px-2 py-1 bg-yellow-400 rounded">Premium</span> @endif
+            </h2>
+            <span class="text-blue-500 font-bold cursor-pointer block lg:hidden go-back">Powrót</span>
+        </div>
     </x-slot>
 
     <div class="relative">
@@ -18,11 +21,11 @@
         
 
         <div class="py-12 max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6 grid grid-cols-3 gap-6">
-            <div>
+            <div class="hidden lg:block lg:col-span-1 left-pane">
                 <livewire:videos.browse :chapters="$chapters" :mini="true" />
             </div>
 
-            <div class="col-span-2" style="margin-top:0;">
+            <div class="lg:block col-span-3 lg:col-span-2 right-pane" style="margin-top:0;">
                 {{-- Video --}}
                 @if (!$canIWatch)
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">

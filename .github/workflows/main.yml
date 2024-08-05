@@ -2,6 +2,8 @@ name: Build and deploy
 on:
   push:
     branches: [main]
+    tags:
+      - v*
   workflow_dispatch:
 
 jobs:
@@ -51,6 +53,7 @@ jobs:
       uses: actions/download-artifact@main
       with:
         name: app-build
+
     - name: Sync artifact to hosting
       uses: appleboy/scp-action@master
       with:
@@ -59,4 +62,64 @@ jobs:
         password: ${{ secrets.SSH_PASSWORD }}
         port: 222
         source: ${{ github.sha }}.tar.gz
-        target: '/artifacts'
+        target: ${{ secrets.SSH_PATH }}/artifacts
+    
+    - name: Extract archive
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 222
+        script: |
+          mkdir -p "${{ secrets.SSH_PATH }}/releases/${{ github.sha }}"
+          tar xzf ${{ secrets.SSH_PATH }}/artifacts/${{ github.sha }}.tar.gz -C ${{ secrets.SSH_PATH }}/releases/${{ github.sha }}
+          rm ${{ secrets.SSH_PATH }}/${{ github.sha }}.tar.gz
+
+          rm -rf ${{ secrets.SSH_PATH }}/releases/${{ github.sha }}/storage
+          mkdir -p ${{ secrets.SSH_PATH }}/storage/{app,public,framework,logs}
+          mkdir -p ${{ secrets.SSH_PATH }}/storage/framework/{cache,sessions,testing,views}
+          mkdir -p ${{ secrets.SSH_PATH }}/storage/framework/cache/data
+          chmod -R 0777 ${{ secrets.SSH_PATH }}/storage
+
+  activate-release:
+    name: Activate release
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+    - name: Activate release
+      uses: appleboy/ssh-action@master
+      env:
+        RELEASE_PATH: ${{ secrets.SSH_PATH }}/releases/${{ github.sha }}
+        ACTIVE_RELEASE_PATH: ${{ secrets.SSH_PATH }}/current
+        STORAGE_PATH: ${{ secrets.SSH_PATH }}/storage
+        BASE_PATH: ${{ secrets.SSH_PATH }}
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 222
+        script: |
+          ln -s -f ${{ secrets.SSH_PATH }}/.env ${{ secrets.SSH_PATH }}/releases/${{ github.sha }}
+          ln -s -f ${{ secrets.SSH_PATH }}/storage ${{ secrets.SSH_PATH }}/releases/${{ github.sha }}
+          ln -s -n -f ${{ secrets.SSH_PATH }}/releases/${{ github.sha }} ${{ secrets.SSH_PATH }}/current
+          ln -s -n -f ${{ secrets.SSH_PATH }}/releases/${{ github.sha }}/storage/app/public ${{ secrets.SSH_PATH }}/releases/${{ github.sha }}/public/storage
+
+  after-hooks:
+    name: Run after hooks
+    runs-on: ubuntu-latest
+    needs: activate-release
+    steps:
+    - name: Run after hooks
+      uses: appleboy/ssh-action@master
+      env:
+        RELEASE_PATH: ${{ secrets.SSH_PATH }}/releases/${{ github.sha }}
+        BASE_PATH: ${{ secrets.SSH_PATH }}
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 222
+        script: |
+          php ${{ secrets.SSH_PATH }}/releases/${{ github.sha }}/artisan migrate --no-interaction
+          php ${{ secrets.SSH_PATH }}/releases/${{ github.sha }}/artisan up
